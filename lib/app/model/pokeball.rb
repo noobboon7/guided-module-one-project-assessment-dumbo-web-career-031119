@@ -1,4 +1,4 @@
 class Pokeball < ActiveRecord::Base
-belongs_to :trainers
-belongs_to :pokemons
+# belongs_to :trainer
+# belongs_to :pokemon
 end
