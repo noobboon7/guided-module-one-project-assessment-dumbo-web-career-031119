@@ -10,3 +10,5 @@ gem "faker"
 gem "nokogiri"
 gem "rake"
 gem 'tty-prompt'
+gem 'rest-client'
+gem 'json'

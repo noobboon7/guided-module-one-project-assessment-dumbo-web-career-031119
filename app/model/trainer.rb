@@ -1,4 +1,4 @@
-class Trainer < ActiveRecord::Migrate
+class Trainer < ActiveRecord::Base
 
 
 end
