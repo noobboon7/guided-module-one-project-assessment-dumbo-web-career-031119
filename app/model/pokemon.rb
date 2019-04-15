@@ -1,2 +1,2 @@
-class Pokemon < ActiveRecord::Migrate
-end 
+class Pokemon < ActiveRecord::Base
+end

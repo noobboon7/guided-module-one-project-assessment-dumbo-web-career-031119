@@ -1,4 +1,4 @@
-class Pokeball < ActiveRecord::Migrate
+class Pokeball < ActiveRecord::Base
 
 
 end
