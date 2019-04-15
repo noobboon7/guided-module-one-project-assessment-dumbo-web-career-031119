@@ -3,7 +3,8 @@ class CreateTrainers < ActiveRecord::Migration[5.2]
     create_table :trainers do |t|
       t.string :name
       t.string :sex
+      t.string :password
     end
-    
+
   end
 end
