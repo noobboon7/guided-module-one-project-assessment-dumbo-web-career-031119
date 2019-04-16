@@ -144,6 +144,14 @@ def view_starter_pokemon(pokemon)
   end
 end
 
+def view_party_pokemon(pokemon)
+  view_pokemon(pokemon)
+  $prompt.select("What do you want to do?") do |p|
+    p.choice "Send to PC"
+    p.choice "Back to Party", -> {party_menu}
+  end
+end
+
 def get_pokemon(pokemon)
   pokeball = Pokeball.create(trainer_id:$current_user.id,pokemon_id:pokemon.id)
   Party.create(pokeball_id:pokeball.id,trainer_id:$current_user.id)
@@ -155,11 +163,14 @@ def party_menu
     Party.trainer_party($current_user).map do |pokeball|
       curr_ball = Pokeball.find(pokeball.pokeball_id)
       pokemon_name = curr_ball.display_pokemon
-      binding.pry
+      pokemon_name
+      # binding.pry
     end.each do |pokemon|
-      binding.pry
-      z.choice "#{pokemon.name}"
+      #binding.pry
+      z.choice "#{pokemon.name.capitalize}", ->{view_party_pokemon(pokemon)}
     end
+
+    z.choice "back",->{game_menu}
   end
 
   game_menu
