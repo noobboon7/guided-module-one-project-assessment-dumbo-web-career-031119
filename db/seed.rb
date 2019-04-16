@@ -7,7 +7,7 @@ require_relative '../lib/app/model/pokemon'
 
 ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: 'db/development.db')
 
-#Opens API call to pokeapi and returns all Pokemon From 1 - 807 
+#Opens API call to pokeapi and returns all Pokemon From 1 - 807
 #Parses that value using Rest-client
 #Pokemon name followed by url of pokemon data
 def pokemon_api_caller
@@ -23,22 +23,22 @@ end
 def pokemon_stat_setter(pokemon,stat_data)
 	stat_data["stats"].each do |stats|
 		hp,speed,attack,defense = 0
-		
+
 		if stats["stat"]["name"] == "hp"
 			pokemon.hp = stats["base_stat"]
 
 		elsif stats["stat"]["name"] == "attack"
 			pokemon.attack = stats["base_stat"]
-		
+
 		elsif stats["stat"]["name"] == "defense"
 			pokemon.defense = stats["base_stat"]
-		
+
 		else stats["stat"]["name"] == "speed"
 			pokemon.speed = stats["base_stat"]
 		end
 	end
 	pokemon
-end	
+end
 
 def pokemon_type_setter(pokemon, stat_data)
 	if stat_data["types"].length == 1
@@ -49,7 +49,7 @@ def pokemon_type_setter(pokemon, stat_data)
 				pokemon.element = types["type"]["name"]
 			end
 			if idx == 1
-				pokemon.element += "/"+types["type"]["name"]
+				pokemon.element += "/" + types["type"]["name"]
 			end
 		end
 
@@ -57,7 +57,7 @@ def pokemon_type_setter(pokemon, stat_data)
 end
 
 def create_pokemon(pokemon_data)
-	new_pokemon = Pokemon.new(name:pokemon_data["name"], total:0) 
+	new_pokemon = Pokemon.new(name:pokemon_data["name"], total:0)
 	#sets pokemon stats
 	pokemon_stat_setter(new_pokemon, pokemon_data)
 	#totals stats for total power of pokemon

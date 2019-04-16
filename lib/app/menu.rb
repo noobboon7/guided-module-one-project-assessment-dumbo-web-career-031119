@@ -41,6 +41,22 @@ def exit
   puts "Smell Ya Later!"
   abort
 end
+def log_out
+  opening_menu
+end
+def view_profile
+  binding.pry
+  puts "Username: #{$current_user.name}"
+  puts "Password: #{$current_user.password}"
+  $prompt.select('Update Profile') do |u|
+    u.choice "Update Profile", ->{update_profile}
+    u.choice "Exit", ->{game_menu}
+  end
+end
+
+def update_profile
+
+end
 
 def opening_menu
   clear
@@ -52,38 +68,41 @@ def opening_menu
 end
 
 def game_menu
-  $prompt.select() do |t|
+  $prompt.select("Game Menu") do |t|
     t.choice 'View Profile', ->{view_profile}
     t.choice 'Find Pokemon', ->{find_pokemon}
     t.choice 'Party', ->{party}
     t.choice 'PC', ->{pc}
+    t.choice 'Log-out', ->{log_out}
   end
 end
 
 def sign_up
+  # asks user name and stores it in name variable
   name = $prompt.ask("What is your name?", require:true) do |n|
     n.modify :capitalize
   end
-  puts "Welcome #{name} to the world of pokemon!"
-
+  puts "Welcome #{name}! Welcome to the world of pokemon!"
+  #variable to decorate password
   ball = $prompt.decorate("◓",:red)
-
+  # stores password in variable
   pass = $prompt.mask("Create a password(4 to 10 characters)",require:true, mask:ball) do |p|
     p.validate(/[a-z,0-9\ ]{4,10}/)
   end
-
+  # store's gender in variable
   gender = $prompt.select('what is your gender?') do |g|
     g.choice 'Male'
     g.choice 'Female'
     g.choice 'Non-binary'
   end
-
+  # checks for username, if it does not exist then it creates a new user
   if Trainer.find_by(name: name) != nil
     puts "Sorry, username that is taken. Try again."
   else
     $current_user = Trainer.create(name: name, password: pass, sex: gender)
-    puts "You have signed up and successfully logged in. Enjoy!"
+    puts "You have successfully signed up and logged in. Enjoy!"
   end
+  game_menu
 end
 
 def log_in
@@ -98,9 +117,21 @@ def log_in
     p.validate(/[a-z,0-9\ ]{4,10}/)
   end
 
-  $current_user = Trainer.find_by(name: name, password: pass)
+  if Trainer.all.find_by(name: name) && Trainer.all.find_by(password: pass) != nil
+   trainer = Trainer.all.find_by(name: name)
 
-  if $current_user == nil
-    puts "Your username or password is incorrect. Please try again."
-  end
+   puts "Welcome back, #{trainer.name}!"
+   sleep 1
+   clear
+   game_menu
+ else
+   puts "Wrong Username or Password, please try agian."
+   log_in
+ end
+  # $current_user = Trainer.find_by(name: name, password: pass)
+  #
+  # if $current_user == nil
+  #   puts "Your username or password is incorrect. Please try again."
+  # end
+  game_menu
 end
