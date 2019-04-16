@@ -10,7 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_15_150706) do
+ActiveRecord::Schema.define(version: 2019_04_16_150428) do
+
+  create_table "parties", force: :cascade do |t|
+    t.integer "pokeball_id"
+    t.integer "trainer_id"
+  end
 
   create_table "pokeballs", force: :cascade do |t|
     t.integer "trainer_id"

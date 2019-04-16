@@ -12,13 +12,13 @@ def clear
 end
 def run_program
   welcome
-  sleep(3)
+  #sleep(3)
   opening_menu
   game_menu
 end
 def welcome
   puts "Hello there!"
-  sleep(1)
+  #sleep(1)
   puts "Welcome to the world of pokémon!"
   puts "                                  ,'\
     _.----.        ____         ,'  _\   ___    ___     ____
@@ -32,9 +32,9 @@ _,-'       `.     |    |  /`.   \,-'    |   \  /   |   |    \  |`.
        \    \ `.__,'|  |`-._    `|      |__| \/ |  `.__,'|  | |   |
         \_.-'       |__|    `-._ |              '-.|     '-.| |   |
                                 `'                            '-._|"
-  sleep(3)
+  #sleep(3)
   puts "My name is Oak! People call me the pokémon Prof!"
-  sleep(1)
+  #sleep(1)
   puts "This world is inhabited by creatures called pokémon! For some people, pokémon are pets. Others use them for fights. Myself...I study pokémon as a profession."
 end
 def exit
@@ -71,7 +71,7 @@ def game_menu
   $prompt.select("Game Menu") do |t|
     t.choice 'View Profile', ->{view_profile}
     t.choice 'Find Pokemon', ->{find_pokemon}
-    t.choice 'Party', ->{party}
+    t.choice 'Party', ->{party_menu}
     t.choice 'PC', ->{pc}
     t.choice 'Log-out', ->{log_out}
   end
@@ -95,6 +95,7 @@ def sign_up
     g.choice 'Female'
     g.choice 'Non-binary'
   end
+
   # checks for username, if it does not exist then it creates a new user
   if Trainer.find_by(name: name) != nil
     puts "Sorry, username that is taken. Try again."
@@ -102,8 +103,67 @@ def sign_up
     $current_user = Trainer.create(name: name, password: pass, sex: gender)
     puts "You have successfully signed up and logged in. Enjoy!"
   end
+
+  starter_pokemon
+end
+
+def starter_pokemon
+  puts "Every young trainer must have a Pokemon. I have 3 for you to choose from."
+  $prompt.select("Pokemon Choices") do |p|
+    pokemon1 = Pokemon.find(197)
+    pokemon2 = Pokemon.find(373)
+    pokemon3 = Pokemon.find(376)
+
+    p.choice "#{pokemon1.name.capitalize}", -> {view_starter_pokemon(pokemon1)}
+    p.choice "#{pokemon2.name.capitalize}", -> {view_starter_pokemon(pokemon2)}
+    p.choice "#{pokemon3.name.capitalize}", -> {view_starter_pokemon(pokemon3)}
+  end
+end
+
+def random_pokemon
+  random_id = 1 + rand(807)
+  pokemon = Pokemon.find(random_id)
+end
+
+def view_pokemon(pokemon)
+  puts "Pokemon: #{pokemon.name.capitalize}"
+  puts "Type: #{pokemon.element}"
+  puts "Total: #{pokemon.total}"
+  puts "HP: #{pokemon.hp}"
+  puts "Attack: #{pokemon.attack}"
+  puts "Defense: #{pokemon.defense}"
+  puts "Speed: #{pokemon.speed}"
+end
+
+def view_starter_pokemon(pokemon)
+  view_pokemon(pokemon)
+
+  $prompt.select("Do you want this Pokemon?") do |s|
+    s.choice "Yes", -> {get_pokemon(pokemon)}
+    s.choice "No", ->{starter_pokemon}
+  end
+end
+
+def get_pokemon(pokemon)
+  pokeball = Pokeball.create(trainer_id:$current_user.id,pokemon_id:pokemon.id)
+  Party.create(pokeball_id:pokeball.id,trainer_id:$current_user.id)
+  binding.pry
+end
+
+def party_menu
+  $prompt.select("Check Stats") do |z|
+    Party.trainer_party($current_user).map do |pokeball|
+      curr_ball = Pokeball.find(pokeball.pokeball_id)
+      curr_ball.display_pokemon.name
+      binding.pry
+    end.each do |name|
+      z.choice "#{name}"
+    end
+  end
+
   game_menu
 end
+
 
 def log_in
 
@@ -118,16 +178,16 @@ def log_in
   end
 
   if Trainer.all.find_by(name: name) && Trainer.all.find_by(password: pass) != nil
-   trainer = Trainer.all.find_by(name: name)
+   $current_user = Trainer.all.find_by(name: name)
 
-   puts "Welcome back, #{trainer.name}!"
+   puts "Welcome back, #{$current_user.name}!"
    sleep 1
    clear
    game_menu
- else
+  else
    puts "Wrong Username or Password, please try agian."
    log_in
- end
+  end
   # $current_user = Trainer.find_by(name: name, password: pass)
   #
   # if $current_user == nil
