@@ -14,6 +14,7 @@ def run_program
   welcome
   sleep(3)
   opening_menu
+  game_menu
 end
 def welcome
   puts "Hello there!"
@@ -50,20 +51,28 @@ def opening_menu
   end
 end
 
+def game_menu
+  $prompt.select() do |t|
+    t.choice 'View Profile', ->{view_profile}
+    t.choice 'Find Pokemon', ->{find_pokemon}
+    t.choice 'Party', ->{party}
+    t.choice 'PC', ->{pc}
+  end
+end
+
 def sign_up
   name = $prompt.ask("What is your name?", require:true) do |n|
     n.modify :capitalize
   end
+  puts "Welcome #{name} to the world of pokemon!"
 
   ball = $prompt.decorate("◓",:red)
 
   pass = $prompt.mask("Create a password(4 to 10 characters)",require:true, mask:ball) do |p|
-    binding.pry
     p.validate(/[a-z,0-9\ ]{4,10}/)
   end
 
   gender = $prompt.select('what is your gender?') do |g|
-    binding.pry
     g.choice 'Male'
     g.choice 'Female'
     g.choice 'Non-binary'
@@ -72,13 +81,25 @@ def sign_up
   if Trainer.find_by(name: name) != nil
     puts "Sorry, username that is taken. Try again."
   else
-    $current_user = Trainer.create(name: name, password: pass)
+    $current_user = Trainer.create(name: name, password: pass, sex: gender)
     puts "You have signed up and successfully logged in. Enjoy!"
   end
 end
 
-def log_in #username, #password
+def log_in
+
+  name = $prompt.ask("What is your Username?", require:true) do |n|
+    n.modify :capitalize
+  end
+
+  ball = $prompt.decorate("◓",:red)
+
+  pass = $prompt.mask("Create a password(4 to 10 characters)",require:true, mask:ball) do |p|
+    p.validate(/[a-z,0-9\ ]{4,10}/)
+  end
+
   $current_user = Trainer.find_by(name: name, password: pass)
+
   if $current_user == nil
     puts "Your username or password is incorrect. Please try again."
   end
