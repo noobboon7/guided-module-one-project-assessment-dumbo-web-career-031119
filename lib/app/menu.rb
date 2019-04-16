@@ -154,10 +154,11 @@ def party_menu
   $prompt.select("Check Stats") do |z|
     Party.trainer_party($current_user).map do |pokeball|
       curr_ball = Pokeball.find(pokeball.pokeball_id)
-      curr_ball.display_pokemon.name
+      pokemon_name = curr_ball.display_pokemon
       binding.pry
-    end.each do |name|
-      z.choice "#{name}"
+    end.each do |pokemon|
+      binding.pry
+      z.choice "#{pokemon.name}"
     end
   end
 
