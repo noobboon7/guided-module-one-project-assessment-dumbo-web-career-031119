@@ -19,11 +19,7 @@ ActiveRecord::Schema.define(version: 2019_04_15_150706) do
 
   create_table "pokemons", force: :cascade do |t|
     t.string "name"
-<<<<<<< HEAD
     t.string "element"
-=======
-    t.string "type"
->>>>>>> Jerry
     t.integer "total"
     t.integer "hp"
     t.integer "attack"
