@@ -12,3 +12,4 @@ gem "rake"
 gem 'tty-prompt'
 gem 'rest-client'
 gem 'json'
+gem 'colorize'

@@ -3,6 +3,8 @@ $prompt = TTY::Prompt.new
 $current_user = nil
 #########################
 # presses a key to continue
+#data = require_relative
+
 def keypress
   $prompt.keypress("Press space or enter to continue", keys: [:space, :return])
 end
@@ -12,29 +14,20 @@ def clear
 end
 def run_program
   welcome
-  #sleep(3)
+  # sleep(2)
   opening_menu
   game_menu
 end
 def welcome
   puts "Hello there!"
-  #sleep(1)
+  # sleep(1)
   puts "Welcome to the world of pokémon!"
-  puts "                                  ,'\
-    _.----.        ____         ,'  _\   ___    ___     ____
-_,-'       `.     |    |  /`.   \,-'    |   \  /   |   |    \  |`.
-\      __    \    '-.  | /   `.  ___    |    \/    |   '-.   \ |  |
- \.    \ \   |  __  |  |/    ,','_  `.  |          | __  |    \|  |
-   \    \/   /,' _`.|      ,' / / / /   |          ,' _`.|     |  |
-    \     ,-'/  /   \    ,'   | \/ / ,`.|         /  /   \  |     |
-     \    \ |   \_/  |   `-.  \    `'  /|  |    ||   \_/  | |\    |
-      \    \ \      /       `-.`.___,-' |  |\  /| \      /  | |   |
-       \    \ `.__,'|  |`-._    `|      |__| \/ |  `.__,'|  | |   |
-        \_.-'       |__|    `-._ |              '-.|     '-.| |   |
-                                `'                            '-._|"
-  #sleep(3)
+  File.open('pokemon_ascii/pokemon_logo').each do |line|
+    puts line
+  end
+  # sleep(3)
   puts "My name is Oak! People call me the pokémon Prof!"
-  #sleep(1)
+  # sleep(1)
   puts "This world is inhabited by creatures called pokémon! For some people, pokémon are pets. Others use them for fights. Myself...I study pokémon as a profession."
 end
 def exit
@@ -58,8 +51,37 @@ def update_profile
 
 end
 
-def opening_menu
+def find_pokemon
+  $prompt.select("Where would you like to find pokemon") do |p|
+    p.choice "Waterfall", ->{waterfall_location}
+  end
+end
+
+def waterfall_location
   clear
+  File.open('pokemon_ascii/waterfall_1').each do |line|
+    puts line
+  end
+
+  $prompt.select("What do you want to do?") do |p|
+    p.choice 'Search', ->{pokemon_encounter}
+    p.choice 'Back Home', ->{game_menu}
+  end
+end
+
+def pokemon_encounter
+  wild_pokemon = random_pokemon
+  view_pokemon(wild_pokemon)
+
+  $prompt.select("A wild #{wild_pokemon.name} has appeared!") do |p|
+    p.choice "Attack"
+    p.choice "Catch"
+    p.choice "Run", -> {game_menu}
+  end
+end
+
+def opening_menu
+  #clear
   $prompt.select("Main Menu") do |t|
     t.choice 'Sign-up', -> {sign_up}
     t.choice 'Log-in', -> {log_in}
@@ -68,6 +90,11 @@ def opening_menu
 end
 
 def game_menu
+  clear 
+  File.open('pokemon_ascii/landscape_1').each do |line|
+    puts line
+  end
+
   $prompt.select("Game Menu") do |t|
     t.choice 'View Profile', ->{view_profile}
     t.choice 'Find Pokemon', ->{find_pokemon}
