@@ -2,9 +2,8 @@
 $prompt = TTY::Prompt.new
 $current_user = nil
 #########################
-# presses a key to continue
 #data = require_relative
-
+# presses a key to continue
 def keypress
   $prompt.keypress("Press space or enter to continue", keys: [:space, :return])
 end
@@ -31,24 +30,66 @@ def welcome
   puts "This world is inhabited by creatures called pokémon! For some people, pokémon are pets. Others use them for fights. Myself...I study pokémon as a profession."
 end
 def exit
-  puts "Smell Ya Later!"
+  puts "Smell Ya Later!".blue
   abort
 end
 def log_out
+  clear
   opening_menu
 end
 def view_profile
-  binding.pry
+  clear
   puts "Username: #{$current_user.name}"
-  puts "Password: #{$current_user.password}"
-  $prompt.select('Update Profile') do |u|
+  puts "Gender: #{$current_user.sex}"
+
+  $prompt.select('Profile Menu') do |u|
     u.choice "Update Profile", ->{update_profile}
+    u.choice "Delete Profile", ->{delete_profile}
     u.choice "Exit", ->{game_menu}
   end
 end
 
 def update_profile
+  clear
+  to_update = $prompt.select('Update') do |u|
+    u.choice "Change Name", 1
+    u.choice "Change Password", 2
+    u.choice "Back", ->{view_profile}
+  end
+  case to_update
+    when 1
+      name = $prompt.ask('Enter your name') do |q|
+        q.required true
+        q.modify :capitalize
+      end
+      user = Trainer.find_by(name: $current_user.name)
+      user.update(name: name)
+      $current_user.name = name
 
+    when 2
+      pass = $prompt.ask('Enter new password') do |q|
+        q.required true
+        q.validate(/[a-z,0-9\ ]{4,10}/, "Invaild entry, please try agian.(4 to 10 characters)")
+      end
+      user = Trainer.find_by(name: $current_user.name)
+      user.update(password: pass)
+  end
+  update_profile
+end
+def delete_profile
+  to_delete = $prompt.select("Are you sure you want to delete?") do |c|
+    c.choice "yes"
+    c.choice "no"
+    c.choice "back", ->{view_profile}
+  end
+  case to_delete
+    when "yes"
+      # also need to delete the pokeball instance 
+      user = Trainer.find_by(id: $current_user.id)
+      user.destroy
+    when "no"
+      delete_profile
+    end
 end
 
 def find_pokemon
@@ -81,7 +122,10 @@ def pokemon_encounter
 end
 
 def opening_menu
-  #clear
+  clear
+  File.open('pokemon_ascii/pokemon_logo').each do |line|
+    puts line
+  end
   $prompt.select("Main Menu") do |t|
     t.choice 'Sign-up', -> {sign_up}
     t.choice 'Log-in', -> {log_in}
@@ -90,7 +134,7 @@ def opening_menu
 end
 
 def game_menu
-  clear 
+  clear
   File.open('pokemon_ascii/landscape_1').each do |line|
     puts line
   end
@@ -105,30 +149,35 @@ def game_menu
 end
 
 def sign_up
+  ######################################################################
   # asks user name and stores it in name variable
   name = $prompt.ask("What is your name?", require:true) do |n|
     n.modify :capitalize
   end
-  puts "Welcome #{name}! Welcome to the world of pokemon!"
+  puts "Welcome #{name}! Welcome to the world of pokemon!".blue
+  ######################################################################
   #variable to decorate password
   ball = $prompt.decorate("◓",:red)
   # stores password in variable
-  pass = $prompt.mask("Create a password(4 to 10 characters)",require:true, mask:ball) do |p|
-    p.validate(/[a-z,0-9\ ]{4,10}/)
+  pass = $prompt.mask("Create a password(4 to 10 characters)", mask:ball) do |p|
+    p.required true
+    p.validate(/[a-z,0-9\ ]{4,10}/, "Invaild entry, please try agian.")
   end
+  ######################################################################
   # store's gender in variable
   gender = $prompt.select('what is your gender?') do |g|
     g.choice 'Male'
     g.choice 'Female'
     g.choice 'Non-binary'
   end
-
+######################################################################
   # checks for username, if it does not exist then it creates a new user
   if Trainer.find_by(name: name) != nil
     puts "Sorry, username that is taken. Try again."
   else
     $current_user = Trainer.create(name: name, password: pass, sex: gender)
     puts "You have successfully signed up and logged in. Enjoy!"
+    sleep 1
   end
 
   starter_pokemon
@@ -171,18 +220,17 @@ def view_starter_pokemon(pokemon)
   end
 end
 
+def get_pokemon(pokemon)
+  pokeball = Pokeball.create(trainer_id:$current_user.id,pokemon_id:pokemon.id)
+  Party.create(pokeball_id:pokeball.id,trainer_id:$current_user.id)
+end
+
 def view_party_pokemon(pokemon)
   view_pokemon(pokemon)
   $prompt.select("What do you want to do?") do |p|
     p.choice "Send to PC"
     p.choice "Back to Party", -> {party_menu}
   end
-end
-
-def get_pokemon(pokemon)
-  pokeball = Pokeball.create(trainer_id:$current_user.id,pokemon_id:pokemon.id)
-  Party.create(pokeball_id:pokeball.id,trainer_id:$current_user.id)
-  binding.pry
 end
 
 def party_menu
@@ -196,26 +244,23 @@ def party_menu
       #binding.pry
       z.choice "#{pokemon.name.capitalize}", ->{view_party_pokemon(pokemon)}
     end
-
     z.choice "back",->{game_menu}
   end
-
   game_menu
 end
 
 
 def log_in
-
   name = $prompt.ask("What is your Username?", require:true) do |n|
     n.modify :capitalize
   end
-
+#####################################################################################
   ball = $prompt.decorate("◓",:red)
 
-  pass = $prompt.mask("Create a password(4 to 10 characters)",require:true, mask:ball) do |p|
-    p.validate(/[a-z,0-9\ ]{4,10}/)
+  pass = $prompt.mask("Enter Password(4 to 10 characters)",require:true, mask:ball) do |p|
+    p.validate(/[a-z,0-9\ ]{4,10}/, "Wrong password, please try again")
   end
-
+#######################################################################################
   if Trainer.all.find_by(name: name) && Trainer.all.find_by(password: pass) != nil
    $current_user = Trainer.all.find_by(name: name)
 
@@ -227,10 +272,4 @@ def log_in
    puts "Wrong Username or Password, please try agian."
    log_in
   end
-  # $current_user = Trainer.find_by(name: name, password: pass)
-  #
-  # if $current_user == nil
-  #   puts "Your username or password is incorrect. Please try again."
-  # end
-  game_menu
 end
