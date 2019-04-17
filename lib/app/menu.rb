@@ -45,7 +45,7 @@ def view_profile
 
   $prompt.select('Profile Menu') do |u|
     u.choice "Update Profile", ->{update_profile}
-    u.choice "Delete Profile", ->{delete_profile}
+    u.choice "Delete Account", ->{delete_profile}
     u.choice "Exit", ->{game_menu}
   end
 end
@@ -53,12 +53,12 @@ end
 def update_profile
   clear
   to_update = $prompt.select('Update') do |u|
-    u.choice "Change Name", 1
-    u.choice "Change Password", 2
+    u.choice "Change Name"
+    u.choice "Change Password"
     u.choice "Back", ->{view_profile}
   end
   case to_update
-    when 1
+    when "Change Name"
       name = $prompt.ask('Enter your name') do |q|
         q.required true
         q.modify :capitalize
@@ -67,7 +67,7 @@ def update_profile
       user.update(name: name)
       $current_user.name = name
 
-    when 2
+    when "Change Password"
       pass = $prompt.ask('Enter new password') do |q|
         q.required true
         q.validate(/[a-z,0-9\ ]{4,10}/, "Invaild entry, please try agian.(4 to 10 characters)")
@@ -77,19 +77,22 @@ def update_profile
   end
   update_profile
 end
+
 def delete_profile
   to_delete = $prompt.select("Are you sure you want to delete?") do |c|
-    c.choice "yes", ->{log_out}
+    c.choice "yes"
     c.choice "no"
-    c.choice "back", ->{view_profile}
   end
   case to_delete
     when "yes"
-      # also need to delete the pokeball instance 
+      # also need to delete the pokeball instance
       user = Trainer.find_by(id: $current_user.id)
       user.destroy
+      pc_delete = PC.where(trainer_id:$current_user.id)
+      PC.delete(pc_delete)
+      opening_menu
     when "no"
-      delete_profile
+      view_profile
     end
 end
 
@@ -114,7 +117,7 @@ def waterfall_location
 end
 
 def camp_location
-  clear 
+  clear
   File.open('pokemon_ascii/landscape_1').each do |line|
     puts line
   end
@@ -126,7 +129,7 @@ def camp_location
 end
 
 def park_location
-  clear 
+  clear
   File.open('pokemon_ascii/park').each do |line|
     puts line
   end
@@ -142,7 +145,7 @@ def pokemon_encounter(wild_pokemon=nil)
     wild_pokemon = random_pokemon
     view_pokemon(wild_pokemon)
   end
-  
+
   $prompt.select("What do you wanna do with #{wild_pokemon.name.capitalize}!") do |p|
     p.choice "Attack"
     p.choice "Catch", ->{catch_pokemon(wild_pokemon)}
@@ -153,43 +156,43 @@ end
 def catch_pokemon(pokemon)
   chance_catch = 1 + rand(100)
 
-  if pokemon.total < 201 
+  if pokemon.total < 201
     if chance_catch > 50 #10
       puts "You caught #{pokemon.name}!"
-      get_pokemon(pokemon) 
+      get_pokemon(pokemon)
       party_menu
-    else 
+    else
       puts"It broke free!"
       #sleep step
       pokemon_encounter(pokemon)
       # location
     end
   end
-  
+
   if pokemon.total > 200 && pokemon.total <= 350
     chance_catch = 1 + rand(100)
     if chance_catch > 75 #25
       puts "You caught #{pokemon.name}!"
       get_pokemon(pokemon)
       party_menu
-    else 
+    else
       puts "It broke free!"
       pokemon_encounter(pokemon)
       # location
 
     end
   end
-  
+
   if pokemon.total > 350
     chance_catch = 1 + rand(100)
     if chance_catch > 95 #65
       puts "You caught #{pokemon.name}!"
       get_pokemon(pokemon)
       party_menu
-    else 
+    else
       puts "It broke free!"
       pokemon_encounter(pokemon)
-      # location 
+      # location
     end
   end
 end
@@ -324,10 +327,8 @@ def pc_menu
   $prompt.select("Check Stats") do |z|
     PC.trainer_pc($current_user).map do |pokeball|
       curr_ball = Pokeball.find(pokeball.pokeball_id)
-      # binding.pry
       curr_ball
     end.each do |pokeball|
-      #binding.pry
       pokemon_name = pokeball.display_pokemon
       pokemon_name
       z.choice "#{pokemon_name.name.capitalize}", ->{view_pc_pokemon(pokemon_name, pokeball)}
@@ -335,7 +336,7 @@ def pc_menu
     z.choice "back",->{game_menu}
   end
   game_menu
-  
+
 end
 
 def release_pokemon(pokemon,pokeball)
@@ -346,14 +347,11 @@ def release_pokemon(pokemon,pokeball)
 end
 
 def delete_pokemon(pokeball)
-  curr_pokeball = Pokeball.find(pokeball.id)
-  pc_row_to_delete = PC.where(pokeball_id:curr_pokeball.id)
-  
-  PC.delete(pc_row_to_delete)
-  Pokeball.delete(curr_pokeball)
-  #binding.pry
+  ball = Pokeball.find(pokeball.id)
+  pc_delete = PC.where(pokeball_id:ball.id)
+  PC.delete(pc_delete)
+  ball.destroy
   pc_menu
-  #Pokeball.delete(curr_pokeball.id)
 end
 
 def party_menu
@@ -362,9 +360,7 @@ def party_menu
       curr_ball = Pokeball.find(pokeball.pokeball_id)
       pokemon_name = curr_ball.display_pokemon
       pokemon_name
-      # binding.pry
     end.each do |pokemon|
-      #binding.pry
       z.choice "#{pokemon.name.capitalize}", ->{view_party_pokemon(pokemon)}
     end
     z.choice "back",->{game_menu}
