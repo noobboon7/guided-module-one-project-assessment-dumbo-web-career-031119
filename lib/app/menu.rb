@@ -97,10 +97,17 @@ def delete_profile
 end
 
 def find_pokemon
+  clear 
+  File.open('pokemon_ascii/observatory').each do |line|
+    puts line
+  end
+
   $prompt.select("Where would you like to find pokemon") do |p|
     p.choice "Waterfall", ->{waterfall_location}
     p.choice "Camp", ->{camp_location}
     p.choice "Park", ->{park_location}
+    p.choice "Spooky-ville", ->{spooky_location}
+    p.choice "Back", ->{game_menu}
   end
 end
 
@@ -140,21 +147,58 @@ def park_location
   end
 end
 
-def pokemon_encounter(wild_pokemon=nil)
+def spooky_location
+  clear
+  File.open('pokemon_ascii/spooky_ville').each do |line|
+    puts line
+  end
+
+  $prompt.select("What do you want to do?") do |p|
+    p.choice 'Search', ->{pokemon_encounter}
+    p.choice 'Back Home', ->{game_menu}
+  end
+end
+
+def pokemon_encounter(wild_pokemon=nil,hit_count=0,catch_count=0)
+  if catch_count == 5
+    puts "#{wild_pokemon.name.capitalize} has fled..."
+    find_pokemon
+  end
+
   if wild_pokemon == nil
     wild_pokemon = random_pokemon
     view_pokemon(wild_pokemon)
   end
 
   $prompt.select("What do you wanna do with #{wild_pokemon.name.capitalize}!") do |p|
-    p.choice "Attack"
-    p.choice "Catch", ->{catch_pokemon(wild_pokemon)}
-    p.choice "Run", -> {game_menu}
+    p.choice "Attack", ->{attack(wild_pokemon,hit_count)}
+    p.choice "Catch", ->{catch_pokemon(wild_pokemon,hit_count,catch_count)}
+    p.choice "Run", -> {find_pokemon}
   end
 end
 
-def catch_pokemon(pokemon)
+def attack(pokemon,hit_count)
+  hit_count+=1
+  if hit_count <= 2
+    puts "#{pokemon.name.capitalize} is angered!"
+  elsif hit_count > 2 && hit_count < 5
+    puts "#{pokemon.name.capitalize} is weakened!"
+  else
+    puts "#{pokemon.name.capitalize} fainted"
+    find_pokemon
+  end
+  
+  pokemon_encounter(pokemon,hit_count)
+end
+
+def catch_pokemon(pokemon,hit_count=0,catch_count=0)
   chance_catch = 1 + rand(100)
+
+  if hit_count == 1
+    chance_catch += 15
+  elsif hit_count > 2
+    chance_catch += 30
+  end
 
   if pokemon.total < 201
     if chance_catch > 50 #10
@@ -164,7 +208,8 @@ def catch_pokemon(pokemon)
     else
       puts"It broke free!"
       #sleep step
-      pokemon_encounter(pokemon)
+      catch_count+=1
+      pokemon_encounter(pokemon,hit_count,catch_count)
       # location
     end
   end
@@ -177,7 +222,8 @@ def catch_pokemon(pokemon)
       party_menu
     else
       puts "It broke free!"
-      pokemon_encounter(pokemon)
+      catch_count +=1
+      pokemon_encounter(pokemon,hit_count,catch_count)
       # location
 
     end
@@ -191,8 +237,8 @@ def catch_pokemon(pokemon)
       party_menu
     else
       puts "It broke free!"
-      pokemon_encounter(pokemon)
-      # location
+      catch_count +=1
+      pokemon_encounter(pokemon,hit_count,catch_count)
     end
   end
 end
@@ -324,6 +370,11 @@ def view_pc_pokemon(pokemon,pokeball)
 end
 
 def pc_menu
+  clear
+  File.open('pokemon_ascii/pc').each do |line|
+    puts line
+  end
+
   $prompt.select("Check Stats") do |z|
     PC.trainer_pc($current_user).map do |pokeball|
       curr_ball = Pokeball.find(pokeball.pokeball_id)
