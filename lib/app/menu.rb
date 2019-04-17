@@ -78,7 +78,7 @@ def update_profile
 end
 def delete_profile
   to_delete = $prompt.select("Are you sure you want to delete?") do |c|
-    c.choice "yes"
+    c.choice "yes", ->{log_out}
     c.choice "no"
     c.choice "back", ->{view_profile}
   end
@@ -174,6 +174,7 @@ def sign_up
   # checks for username, if it does not exist then it creates a new user
   if Trainer.find_by(name: name) != nil
     puts "Sorry, username that is taken. Try again."
+    sign_up
   else
     $current_user = Trainer.create(name: name, password: pass, sex: gender)
     puts "You have successfully signed up and logged in. Enjoy!"
