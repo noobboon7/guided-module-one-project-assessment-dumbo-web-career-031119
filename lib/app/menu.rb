@@ -1,6 +1,7 @@
 #########Golbal##########
 $prompt = TTY::Prompt.new
 $current_user = nil
+$wild_pokemon = nil
 #########################
 #data = require_relative
 # presses a key to continue
@@ -110,14 +111,61 @@ def waterfall_location
   end
 end
 
-def pokemon_encounter
-  wild_pokemon = random_pokemon
-  view_pokemon(wild_pokemon)
 
-  $prompt.select("A wild #{wild_pokemon.name} has appeared!") do |p|
+def pokemon_encounter(wild_pokemon=nil)
+  if wild_pokemon == nil
+    wild_pokemon = random_pokemon
+    view_pokemon(wild_pokemon)
+  end
+  
+  $prompt.select("What do you wanna do with #{wild_pokemon.name.capitalize}!") do |p|
     p.choice "Attack"
-    p.choice "Catch"
+    p.choice "Catch", ->{catch_pokemon(wild_pokemon)}
     p.choice "Run", -> {game_menu}
+  end
+end
+
+def catch_pokemon(pokemon)
+  chance_catch = 1 + rand(100)
+
+  if pokemon.total < 201 
+    if chance_catch > 50 #10
+      puts "You caught #{pokemon.name}!"
+      get_pokemon(pokemon) 
+      party_menu
+    else 
+      puts"It broke free!"
+      #sleep step
+      pokemon_encounter(pokemon)
+      # location
+    end
+  end
+  
+  if pokemon.total > 200 && pokemon.total <= 350
+    chance_catch = 1 + rand(100)
+    if chance_catch > 75 #25
+      puts "You caught #{pokemon.name}!"
+      get_pokemon(pokemon)
+      party_menu
+    else 
+      puts "It broke free!"
+      pokemon_encounter(pokemon)
+      # location
+
+    end
+  end
+  
+  if pokemon.total > 350
+    chance_catch = 1 + rand(100)
+    if chance_catch > 95 #65
+      puts "You caught #{pokemon.name}!"
+      get_pokemon(pokemon)
+      party_menu
+    else 
+      puts "It broke free!"
+      pokemon_encounter(pokemon)
+      # location 
+    end
   end
 end
 
@@ -143,7 +191,7 @@ def game_menu
     t.choice 'View Profile', ->{view_profile}
     t.choice 'Find Pokemon', ->{find_pokemon}
     t.choice 'Party', ->{party_menu}
-    t.choice 'PC', ->{pc}
+    t.choice 'PC', ->{pc_menu}
     t.choice 'Log-out', ->{log_out}
   end
 end
@@ -223,15 +271,60 @@ end
 
 def get_pokemon(pokemon)
   pokeball = Pokeball.create(trainer_id:$current_user.id,pokemon_id:pokemon.id)
-  Party.create(pokeball_id:pokeball.id,trainer_id:$current_user.id)
+  #if Party at Trainer_id.count < 6
+  if Party.where(trainer_id: $current_user.id).count <= 5
+    Party.create(pokeball_id:pokeball.id,trainer_id:$current_user.id)
+  else
+    PC.create(pokeball_id:pokeball.id,trainer_id:$current_user.id)
+  end
 end
 
 def view_party_pokemon(pokemon)
   view_pokemon(pokemon)
   $prompt.select("What do you want to do?") do |p|
-    p.choice "Send to PC"
+    p.choice "Send to PC", -> {pc_menu}
     p.choice "Back to Party", -> {party_menu}
   end
+end
+
+def view_pc_pokemon(pokemon,pokeball)
+  view_pokemon(pokemon)
+  $prompt.select("What do you want to do?") do |p|
+    p.choice "Release Pokemon", -> {release_pokemon(pokemon, pokeball)}
+    p.choice "Back to PC", -> {pc_menu}
+  end
+end
+
+def pc_menu
+  $prompt.select("Check Stats") do |z|
+    PC.trainer_pc($current_user).map do |pokeball|
+      curr_ball = Pokeball.find(pokeball.pokeball_id)
+      # binding.pry
+      curr_ball
+    end.each do |pokeball|
+      #binding.pry
+      pokemon_name = pokeball.display_pokemon
+      pokemon_name
+      z.choice "#{pokemon_name.name.capitalize}", ->{view_pc_pokemon(pokemon_name, pokeball)}
+    end
+    z.choice "back",->{game_menu}
+  end
+  game_menu
+  
+end
+
+def release_pokemon(pokemon,pokeball)
+  $prompt.select("Are you sure you want to release #{pokemon.name}?") do |c|
+    c.choice "yes", -> {delete_pokemon(pokeball)}
+    c.choice "no", -> {view_pc_pokemon(pokemon)}
+  end
+end
+
+def delete_pokemon(pokeball)
+  # curr_pokeball = Pokeball.find(pokeball.id)
+  # binding.pry
+
+  #Pokeball.delete(curr_pokeball.id)
 end
 
 def party_menu
