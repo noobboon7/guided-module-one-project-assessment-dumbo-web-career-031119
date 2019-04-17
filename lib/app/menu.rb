@@ -96,6 +96,8 @@ end
 def find_pokemon
   $prompt.select("Where would you like to find pokemon") do |p|
     p.choice "Waterfall", ->{waterfall_location}
+    p.choice "Camp", ->{camp_location}
+    p.choice "Park", ->{park_location}
   end
 end
 
@@ -111,6 +113,29 @@ def waterfall_location
   end
 end
 
+def camp_location
+  clear 
+  File.open('pokemon_ascii/landscape_1').each do |line|
+    puts line
+  end
+
+  $prompt.select("What do you want to do?") do |p|
+    p.choice 'Search', ->{pokemon_encounter}
+    p.choice 'Back Home', ->{game_menu}
+  end
+end
+
+def park_location
+  clear 
+  File.open('pokemon_ascii/park').each do |line|
+    puts line
+  end
+
+  $prompt.select("What do you want to do?") do |p|
+    p.choice 'Search', ->{pokemon_encounter}
+    p.choice 'Back Home', ->{game_menu}
+  end
+end
 
 def pokemon_encounter(wild_pokemon=nil)
   if wild_pokemon == nil
@@ -183,7 +208,7 @@ end
 
 def game_menu
   clear
-  File.open('pokemon_ascii/landscape_1').each do |line|
+  File.open('pokemon_ascii/dream_castle').each do |line|
     puts line
   end
 
@@ -321,9 +346,13 @@ def release_pokemon(pokemon,pokeball)
 end
 
 def delete_pokemon(pokeball)
-  # curr_pokeball = Pokeball.find(pokeball.id)
-  # binding.pry
-
+  curr_pokeball = Pokeball.find(pokeball.id)
+  pc_row_to_delete = PC.where(pokeball_id:curr_pokeball.id)
+  
+  PC.delete(pc_row_to_delete)
+  Pokeball.delete(curr_pokeball)
+  #binding.pry
+  pc_menu
   #Pokeball.delete(curr_pokeball.id)
 end
 
