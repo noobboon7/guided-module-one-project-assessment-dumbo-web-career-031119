@@ -96,7 +96,7 @@ def delete_profile
 end
 
 def find_pokemon
-  clear 
+  clear
   File.open('pokemon_ascii/observatory').each do |line|
     puts line
   end
@@ -186,7 +186,7 @@ def attack(pokemon,hit_count)
     puts "#{pokemon.name.capitalize} fainted"
     find_pokemon
   end
-  
+
   pokemon_encounter(pokemon,hit_count)
 end
 
@@ -264,7 +264,7 @@ def game_menu
   File.open('pokemon_ascii/dream_castle').each do |line|
     puts line
   end
-  
+
   #pid = fork{ exec ‘killall’, “afplay” }
 
   $prompt.select("Game Menu") do |t|
@@ -428,11 +428,7 @@ def party_menu
       Pokeball.find(pokeball.pokeball_id)
     end.each do |pokeball|
       pokemon_name = pokeball.display_pokemon
-<<<<<<< HEAD
-      z.choice "#{pokemon_name.name.capitalize}", ->{view_party_pokemon(pokemon_name,pokeball)}
-=======
       z.choice "#{pokemon_name.name.capitalize}", ->{view_party_pokemon(pokemon_name, pokeball)}
->>>>>>> master
     end
     z.choice "back",->{game_menu}
   end
