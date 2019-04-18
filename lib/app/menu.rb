@@ -3,7 +3,6 @@ $prompt = TTY::Prompt.new
 $current_user = nil
 $wild_pokemon = nil
 #########################
-#data = require_relative
 # presses a key to continue
 def keypress
   $prompt.keypress("Press space or enter to continue", keys: [:space, :return])
@@ -248,6 +247,11 @@ def opening_menu
   File.open('pokemon_ascii/pokemon_logo').each do |line|
     puts line
   end
+  #champion_theme = "pokemon_ascii/champion_theme.mp3"
+
+
+  pid = fork{ exec 'afplay', champion_theme }
+
   $prompt.select("Main Menu") do |t|
     t.choice 'Sign-up', -> {sign_up}
     t.choice 'Log-in', -> {log_in}
@@ -260,6 +264,8 @@ def game_menu
   File.open('pokemon_ascii/dream_castle').each do |line|
     puts line
   end
+  
+  #pid = fork{ exec ‘killall’, “afplay” }
 
   $prompt.select("Game Menu") do |t|
     t.choice 'View Profile', ->{view_profile}
@@ -353,7 +359,7 @@ def get_pokemon(pokemon)
   end
 end
 
-def view_party_pokemon(pokemon)
+def view_party_pokemon(pokemon,pokeball)
   view_pokemon(pokemon)
   $prompt.select("What do you want to do?") do |p|
     p.choice "Send to PC", -> {pc_menu}
@@ -381,7 +387,6 @@ def pc_menu
       curr_ball
     end.each do |pokeball|
       pokemon_name = pokeball.display_pokemon
-      pokemon_name
       z.choice "#{pokemon_name.name.capitalize}", ->{view_pc_pokemon(pokemon_name, pokeball)}
     end
     z.choice "back",->{game_menu}
@@ -408,11 +413,10 @@ end
 def party_menu
   $prompt.select("Check Stats") do |z|
     Party.trainer_party($current_user).map do |pokeball|
-      curr_ball = Pokeball.find(pokeball.pokeball_id)
-      pokemon_name = curr_ball.display_pokemon
-      pokemon_name
-    end.each do |pokemon|
-      z.choice "#{pokemon.name.capitalize}", ->{view_party_pokemon(pokemon)}
+      Pokeball.find(pokeball.pokeball_id)
+    end.each do |pokeball|
+      pokemon_name = pokeball.display_pokemon
+      z.choice "#{pokemon_name.name.capitalize}", ->{view_party_pokemon(pokemon_name, pokeball)}
     end
     z.choice "back",->{game_menu}
   end
