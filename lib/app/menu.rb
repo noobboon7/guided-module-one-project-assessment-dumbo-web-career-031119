@@ -307,33 +307,44 @@ def get_pokemon(pokemon)
   end
 end
 
-def view_party_pokemon(pokemon)
+def view_party_pokemon(pokemon,pokeball)
   view_pokemon(pokemon)
   $prompt.select("What do you want to do?") do |p|
-    p.choice "Send to PC", -> {pc_menu}
+    p.choice "Tranfer to PC", -> {tranfer_to_pc(pokeball)}
     p.choice "Back to Party", -> {party_menu}
   end
 end
 
-def view_pc_pokemon(pokemon,pokeball)
+def tranfer_to_pc(pokeball)
+  party_row = Party.find_by(pokeball_id:pokeball.id)
+  PC.create(pokeball_id:pokeball.id,trainer_id:pokeball.trainer_id)
+  Party.delete(party_row)
+end
+
+def view_pc_pokemon(pokemon, pokeball)
   view_pokemon(pokemon)
   $prompt.select("What do you want to do?") do |p|
     p.choice "Release Pokemon", -> {release_pokemon(pokemon, pokeball)}
+    p.choice "Move to party", -> {move_to_party(pokeball)}
     p.choice "Back to PC", -> {pc_menu}
   end
+end
+
+def move_to_party(pokeball)
+  pc_row = PC.find_by(pokeball_id:pokeball.id)
+  Party.create(pokeball_id:pokeball.id,trainer_id:pokeball.trainer_id)
+  PC.delete(pc_row)
 end
 
 def pc_menu
   $prompt.select("Check Stats") do |z|
     PC.trainer_pc($current_user).map do |pokeball|
-      curr_ball = Pokeball.find(pokeball.pokeball_id)
-      curr_ball
+      Pokeball.find(pokeball.pokeball_id)
     end.each do |pokeball|
       pokemon_name = pokeball.display_pokemon
-      pokemon_name
       z.choice "#{pokemon_name.name.capitalize}", ->{view_pc_pokemon(pokemon_name, pokeball)}
     end
-    z.choice "back",->{game_menu}
+    z.choice "Back",->{game_menu}
   end
   game_menu
 
@@ -342,7 +353,7 @@ end
 def release_pokemon(pokemon,pokeball)
   $prompt.select("Are you sure you want to release #{pokemon.name}?") do |c|
     c.choice "yes", -> {delete_pokemon(pokeball)}
-    c.choice "no", -> {view_pc_pokemon(pokemon)}
+    c.choice "no", -> {view_pc_pokemon(pokemon, pokeball)}
   end
 end
 
@@ -357,11 +368,10 @@ end
 def party_menu
   $prompt.select("Check Stats") do |z|
     Party.trainer_party($current_user).map do |pokeball|
-      curr_ball = Pokeball.find(pokeball.pokeball_id)
-      pokemon_name = curr_ball.display_pokemon
-      pokemon_name
-    end.each do |pokemon|
-      z.choice "#{pokemon.name.capitalize}", ->{view_party_pokemon(pokemon)}
+      Pokeball.find(pokeball.pokeball_id)
+    end.each do |pokeball|
+      pokemon_name = pokeball.display_pokemon
+      z.choice "#{pokemon_name.name.capitalize}", ->{view_party_pokemon(pokemon_name,pokeball)}
     end
     z.choice "back",->{game_menu}
   end
