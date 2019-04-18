@@ -13,11 +13,16 @@ def clear
 end
 def run_program
   welcome
-  # sleep(2)
+  sleep(2)
   opening_menu
   game_menu
 end
 def welcome
+  title_theme = "pokemon_ascii/title.mp3"
+
+  kill_music  
+  sleep(0.01)
+  start_music(title_theme)
   puts "Hello there!"
   # sleep(1)
   puts "Welcome to the world of pokémon!"
@@ -29,7 +34,9 @@ def welcome
   # sleep(1)
   puts "This world is inhabited by creatures called pokémon! For some people, pokémon are pets. Others use them for fights. Myself...I study pokémon as a profession."
 end
+
 def exit
+  pid = fork{ exec "killall", "afplay"}
   puts "Smell Ya Later!".blue
   abort
 end
@@ -101,6 +108,12 @@ def find_pokemon
     puts line
   end
 
+  observatory = "pokemon_ascii/observatory.mp3"
+
+  kill_music  
+  sleep(0.01)
+  start_music(observatory)  
+
   $prompt.select("Where would you like to find pokemon") do |p|
     p.choice "Waterfall", ->{waterfall_location}
     p.choice "Camp", ->{camp_location}
@@ -116,6 +129,12 @@ def waterfall_location
     puts line
   end
 
+  surf = "pokemon_ascii/surf.mp3"
+
+  kill_music  
+  sleep(0.01)
+  start_music(surf) 
+
   $prompt.select("What do you want to do?") do |p|
     p.choice 'Search', ->{pokemon_encounter}
     p.choice 'Back Home', ->{game_menu}
@@ -127,6 +146,12 @@ def camp_location
   File.open('pokemon_ascii/landscape_1').each do |line|
     puts line
   end
+
+  camp = "pokemon_ascii/camp.mp3"
+
+  kill_music  
+  sleep(0.01)
+  start_music(camp)
 
   $prompt.select("What do you want to do?") do |p|
     p.choice 'Search', ->{pokemon_encounter}
@@ -140,6 +165,12 @@ def park_location
     puts line
   end
 
+  park = "pokemon_ascii/park.mp3"
+
+  kill_music  
+  sleep(0.01)
+  start_music(park)
+
   $prompt.select("What do you want to do?") do |p|
     p.choice 'Search', ->{pokemon_encounter}
     p.choice 'Back Home', ->{game_menu}
@@ -152,6 +183,12 @@ def spooky_location
     puts line
   end
 
+  spooky = "pokemon_ascii/spooky.mp3"
+
+  kill_music  
+  sleep(0.01)
+  start_music(spooky)
+
   $prompt.select("What do you want to do?") do |p|
     p.choice 'Search', ->{pokemon_encounter}
     p.choice 'Back Home', ->{game_menu}
@@ -159,11 +196,18 @@ def spooky_location
 end
 
 def pokemon_encounter(wild_pokemon=nil,hit_count=0,catch_count=0)
+  wild_encounter = "pokemon_ascii/wild_pokemon.mp3"
+
+  kill_music  
+  sleep(0.01)
+  start_music(wild_encounter)
+
   if catch_count == 5
     puts "#{wild_pokemon.name.capitalize} has fled..."
     find_pokemon
   end
 
+  sleep(3)
   if wild_pokemon == nil
     wild_pokemon = random_pokemon
     view_pokemon(wild_pokemon)
@@ -242,16 +286,19 @@ def catch_pokemon(pokemon,hit_count=0,catch_count=0)
   end
 end
 
+def kill_music
+  pid = fork{ exec "killall", "afplay" }
+end
+
+def start_music(file)
+  pid = fork{ exec 'afplay', file }
+end
+
 def opening_menu
   clear
   File.open('pokemon_ascii/pokemon_logo').each do |line|
     puts line
   end
-  champion_theme = "pokemon_ascii/champion_them.mp3"
-  title_theme = "pokemon_ascii/title.mp3"
-
-
-  pid = fork{ exec 'afplay', title_theme }
 
   $prompt.select("Main Menu") do |t|
     t.choice 'Sign-up', -> {sign_up}
@@ -266,7 +313,12 @@ def game_menu
     puts line
   end
 
-  pid = fork{ exec "killall", "afplay" }
+  game_menu = "pokemon_ascii/dream_theme.mp3"
+
+  kill_music  
+  sleep(0.01)
+  start_music(game_menu) 
+
 
   $prompt.select("Game Menu") do |t|
     t.choice 'View Profile', ->{view_profile}
