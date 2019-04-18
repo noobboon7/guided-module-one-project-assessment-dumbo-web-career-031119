@@ -247,10 +247,11 @@ def opening_menu
   File.open('pokemon_ascii/pokemon_logo').each do |line|
     puts line
   end
-  #champion_theme = "pokemon_ascii/champion_theme.mp3"
+  champion_theme = "pokemon_ascii/champion_them.mp3"
+  title_theme = "pokemon_ascii/title.mp3"
 
 
-  pid = fork{ exec 'afplay', champion_theme }
+  pid = fork{ exec 'afplay', title_theme }
 
   $prompt.select("Main Menu") do |t|
     t.choice 'Sign-up', -> {sign_up}
@@ -265,7 +266,7 @@ def game_menu
     puts line
   end
   
-  #pid = fork{ exec ‘killall’, “afplay” }
+  pid = fork{ exec "killall", "afplay" }
 
   $prompt.select("Game Menu") do |t|
     t.choice 'View Profile', ->{view_profile}
