@@ -5,7 +5,7 @@ $wild_pokemon = nil
 #########################
 # presses a key to continue
 def keypress
-  $prompt.keypress("Press space or enter to continue", keys: [:space, :return])
+  $prompt.keypress("", keys: [:up, :down])
 end
 # clears the user screen
 def clear
@@ -13,20 +13,20 @@ def clear
 end
 def run_program
   welcome
-  # sleep(2)
+  sleep(2)
   opening_menu
   game_menu
 end
 def welcome
   puts "Hello there!"
-  # sleep(1)
+  sleep(1)
   puts "Welcome to the world of pokémon!"
   File.open('pokemon_ascii/pokemon_logo').each do |line|
     puts line
   end
-  # sleep(3)
+  sleep(3)
   puts "My name is Oak! People call me the pokémon Prof!"
-  # sleep(1)
+  sleep(1)
   puts "This world is inhabited by creatures called pokémon! For some people, pokémon are pets. Others use them for fights. Myself...I study pokémon as a profession."
 end
 def exit
